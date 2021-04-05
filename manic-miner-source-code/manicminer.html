@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>manicminer</title>
+  <script src="../../jsgame0.js"></script>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+.hidden {
+  display: none;
+}
+#original {
+  margin-left: 1em;
+}
+  </style>
+</head>
+
+<body>
+<section id="imageLoader" class="hidden">
+  <img class="hidden" src="images/background.png" alt="background" data-name="background">
+  <img class="hidden" src="images/platform11.png" alt="platform11" data-name="platform11">
+  <img class="hidden" src="images/platform21.png" alt="platform21" data-name="platform21">
+  <img class="hidden" src="images/platform22.png" alt="platform22" data-name="platform22">
+  <img class="hidden" src="images/platform23.png" alt="platform23" data-name="platform23">
+  <img class="hidden" src="images/platform24.png" alt="platform24" data-name="platform24">
+  <img class="hidden" src="images/platform25.png" alt="platform25" data-name="platform25">
+  <img class="hidden" src="images/platform26.png" alt="platform26" data-name="platform26">
+  <img class="hidden" src="images/platform27.png" alt="platform27" data-name="platform27">
+  <img class="hidden" src="images/platform28.png" alt="platform28" data-name="platform28">
+  <img class="hidden" src="images/willyl0.png" alt="willyl0" data-name="willyl0">
+  <img class="hidden" src="images/willyl1.png" alt="willyl1" data-name="willyl1">
+  <img class="hidden" src="images/willyl2.png" alt="willyl2" data-name="willyl2">
+  <img class="hidden" src="images/willyr0.png" alt="willyr0" data-name="willyr0">
+  <img class="hidden" src="images/willyr1.png" alt="willyr1" data-name="willyr1">
+  <img class="hidden" src="images/willyr2.png" alt="willyr2" data-name="willyr2">
+</section>
+
+<main>
+<h1>manicminer</h1>
+
+<canvas id="screen">
+The game screen appears here if your browser supports the Canvas API.
+</canvas>
+<section id="controls">
+  <button type="button" id="reset">Reset</button>
+  <button type="button" id="pause">Pause</button>
+</section>
+
+<h2>Attribution</h2>
+
+<p><a href="https://wireframe.raspberrypi.org/issues/49">Source Code: Remake Manic Miner's crumbling platforms, pages 66-67, by Mark Vanstone</a>.</p>
+
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/legalcode">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported</a>.</p>
+
+<h2>Original Python code</h2>
+
+<pre id="original"><code>
+# Manic Miner
+
+HEIGHT = 400
+willy = Actor(&#x27;willyr0&#x27;,(400,300))
+willy.direction = &quot;r&quot;
+willy.jump = 0
+willy.onground = False
+count = 0
+platforms = [[1,1,0,0,0,0,1,1,0,0,2,2,2,1,1,1,1,0,0,0,0,0,0],
+             [0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1],
+             [1,1,1,0,0,0,2,2,2,2,2,0,0,0,0,1,1,1,0,0,0,0,0],
+             [0,0,1,1,0,0,0,0,0,0,0,0,1,1,2,2,0,0,1,1,1,0,0],
+             [1,1,0,0,1,1,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,1,1],
+             [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]]
+platformActors = []
+for r in range(len(platforms)):
+    for c in range(len(platforms[r])):
+        if(platforms[r][c] != 0 ): platformActors.append(Actor(&#x27;platform&#x27;+str(platforms[r][c])+&quot;1&quot;,(70+(c*30),120+(r*40))))
+        platformActors[len(platformActors)-1].status = 0
+
+def draw():
+    screen.blit(&quot;background&quot;, (0, 0))
+    willy.draw()
+    drawPlatforms()
+
+def update():
+    global count
+    willy.image = &quot;willy&quot;+ willy.direction + &quot;0&quot;
+    if keyboard.left:
+        moveWilly(-1,0)
+        willy.direction = &quot;l&quot;
+        willy.image = &quot;willyl&quot;+ str(int(count/8)%3)
+        pass
+    if keyboard.right:
+        moveWilly(1,0)
+        willy.direction = &quot;r&quot;
+        willy.image = &quot;willyr&quot;+ str(int(count/8)%3)
+        pass
+    checkGravity()
+    count += 1
+
+def on_key_down(key):
+    if key.name == &quot;SPACE&quot;:
+        if willy.onground == True:
+            willy.jump = 40
+
+def drawPlatforms():
+    for p in range(len(platformActors)):
+        if platformActors[p].status != -1:
+            platformActors[p].draw()
+
+def moveWilly(x,y):
+    if willy.x+x &lt; 730 and willy.x+x &gt; 70:
+        willy.x += x
+
+def checkGravity():
+    if willy.jump &gt; 0:
+        willy.y -=2
+        willy.jump -=1
+    if willy.y &lt; 320:
+        willy.onground = False
+        for p in range(len(platformActors)):
+            frame = int(platformActors[p].image[-1])+1
+            if platformActors[p].status &gt; 0 :
+                platformActors[p].status -= 1
+                if platformActors[p].status == 0 :
+                    platformActors[p].y += 1
+                    if frame &gt; 8 :
+                        platformActors[p].status = -1
+                    else:
+                        platformActors[p].image = &quot;platform2&quot;+str(frame)
+                        platformActors[p].status = 30
+            if((willy.x &gt; platformActors[p].x-20 and willy.x &lt; platformActors[p].x+20) and willy.y+20 == platformActors[p].y-14+(frame-1) and platformActors[p].status != -1):
+                willy.onground = True
+                if platformActors[p].image[8] == &quot;2&quot;:
+                    if platformActors[p].status == 0 : platformActors[p].status = 30
+        if willy.onground == False:
+            willy.y += 1
+    else:
+        willy.onground = True
+</code></pre>
+</main>
+
+<script>
+// Manic Miner
+
+HEIGHT = 400;
+
+const PLATFORMS = [[1,1,0,0,0,0,1,1,0,0,2,2,2,1,1,1,1,0,0,0,0,0,0],
+                   [0,0,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,1,1],
+                   [1,1,1,0,0,0,2,2,2,2,2,0,0,0,0,1,1,1,0,0,0,0,0],
+                   [0,0,1,1,0,0,0,0,0,0,0,0,1,1,2,2,0,0,1,1,1,0,0],
+                   [1,1,0,0,1,1,0,0,0,2,2,2,0,0,0,0,0,0,0,0,0,1,1],
+                   [0,0,0,0,0,0,0,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0]];
+
+var willy, count, platformActors;
+
+function reset() {
+  willy = new Actor('willyr0');
+  willy.pos = [400, 300];
+  willy.direction = "r";
+  willy.jump = 0;
+  willy.onground = false;
+  count = 0;
+
+  platformActors = [];
+  for (let r = 0; r < PLATFORMS.length; r++) {
+    for (let c = 0; c < PLATFORMS[r].length; c++) {
+      if (PLATFORMS[r][c] !== 0) {
+        let actor = new Actor('platform' + PLATFORMS[r][c] + "1");
+        actor.pos = [70 + (c * 30), 120 + (r * 40)];
+        actor.status = 0;
+        platformActors.push(actor);
+      }
+    }
+  }
+}
+
+function draw() {
+  screen.blit("background", [0, 0]);
+  willy.draw();
+  drawPlatforms();
+}
+
+function update() {
+  willy.name = "willy" + willy.direction + "0";
+  if (keyboard[keys.LEFT]) {
+    moveWilly(-1, 0);
+    willy.direction = "l";
+    willy.name = "willyl" + (Math.trunc(count / 8) % 3);
+  }
+  if (keyboard[keys.RIGHT]) {
+    moveWilly(1, 0);
+    willy.direction = "r";
+    willy.name = "willyr" + (Math.trunc(count / 8) % 3);
+  }
+  checkGravity();
+  count += 1;
+}
+
+function on_key_down(key) {
+  if (key === keys.SPACE) {
+    if (willy.onground) {
+      willy.jump = 40;
+    }
+  }
+}
+
+function drawPlatforms() {
+  for (let p of platformActors) {
+    if (p.status !== -1) {
+      p.draw();
+    }
+  }
+}
+
+function moveWilly(x, y) {
+  if (((willy.posx + x) < 730) && ((willy.posx + x) > 70)) {
+    willy.posx += x;
+  }
+}
+
+function checkGravity() {
+  if (willy.jump > 0) {
+    willy.posy -= 2;
+    willy.jump -= 1;
+  }
+  if (willy.posy < 320) {
+    willy.onground = false;
+    for (let p of platformActors) {
+      let frame = parseInt(p.name.substring(p.name.length - 1), 10) + 1;
+      if (p.status > 0) {
+        p.status -= 1;
+        if (p.status === 0) {
+          p.posy += 1;
+          if (frame > 8) {
+            p.status = -1;
+          }
+          else {
+            p.name = "platform2" + frame;
+            p.status = 30;
+          }
+        }
+      }
+      if (((willy.posx > (p.posx - 20)) && (willy.posx < (p.posx + 20))) &&
+          ((willy.posy + 20) === (p.posy - 14 + frame - 1)) &&
+          (p.status !== -1)) {
+        willy.onground = true;
+        if (p.name.substring(8, 9) === "2") {
+          if (p.status === 0) {
+            p.status = 30;
+          }
+        }
+      }
+    }
+    if (!willy.onground) {
+      willy.posy += 1;
+    }
+  }
+  else {
+    willy.onground = true;
+  }
+}
+
+window.addEventListener('load', (event) => {
+  images.LOAD('#imageLoader img');
+  reset();
+  screen.set_mode('#screen', '#reset', '#pause');
+});
+</script>
+</body>
+
+</html>
